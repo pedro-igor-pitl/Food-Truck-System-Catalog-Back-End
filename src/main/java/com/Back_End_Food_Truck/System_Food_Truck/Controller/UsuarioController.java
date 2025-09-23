@@ -1,7 +1,10 @@
 package com.Back_End_Food_Truck.System_Food_Truck.Controller;
 
+import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOEndereco;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOLogin;
+import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.TipoUsuario;
+import com.Back_End_Food_Truck.System_Food_Truck.Model.Usuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/admin")
-public class AutenticacaoController {
+public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
@@ -23,4 +26,20 @@ public class AutenticacaoController {
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body("Credenciais inválidas ou não é administrador."));
     }
+
+    @GetMapping("/listaUsuario")
+    public ResponseEntity<Usuario> lista_usuario() {
+
+    }
+
+    @PostMapping("/cadastrar")
+    public ResponseEntity<Usuario> cadastrar(@RequestBody DTOUsuario DTOUsuario) {
+        Usuario usuario = usuarioService.cadastrarUsuario(DTOUsuario);
+        return ResponseEntity.status(HttpStatus.CREATED).body(usuario);
+    }
+
+
+
+
+
 }

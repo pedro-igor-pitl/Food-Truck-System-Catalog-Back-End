@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data // gera getters, setters, equals, hashCode e toString
-@NoArgsConstructor // construtor vazio
-@AllArgsConstructor // construtor com todos os campos
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class DTOLogin {
     private String email;
     private String senha;
