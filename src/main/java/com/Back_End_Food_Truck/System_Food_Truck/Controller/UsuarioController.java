@@ -1,6 +1,7 @@
 package com.Back_End_Food_Truck.System_Food_Truck.Controller;
 
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOEndereco;
+import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOListaUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOLogin;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.TipoUsuario;
@@ -10,6 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+import static org.springframework.web.servlet.function.ServerResponse.status;
 
 @RestController
 @RequestMapping("/admin")
@@ -27,9 +32,9 @@ public class UsuarioController {
                         .body("Credenciais inválidas ou não é administrador."));
     }
 
-    @GetMapping("/listaUsuario")
-    public ResponseEntity<Usuario> lista_usuario() {
-
+    @GetMapping("/listaUsuarios")
+    public List<DTOListaUsuario> listarUsuarios() {
+        return usuarioService.listarUsuarios();
     }
 
     @PostMapping("/cadastrar")
