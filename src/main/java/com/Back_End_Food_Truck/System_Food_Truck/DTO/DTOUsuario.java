@@ -7,7 +7,6 @@ import lombok.Data;
 public class DTOUsuario {
     private String nome;
     private String email;
-    private String senha;
     private TipoUsuario tipo;
     private String telefone;
     private DTOEndereco endereco;

@@ -6,7 +6,7 @@ import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Endereco;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Usuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.EnderecoRepository;
-import com.Back_End_Food_Truck.System_Food_Truck.Repository.UsuarioRepository;
+import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryAdmin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,22 +17,22 @@ import java.util.stream.Collectors;
 import static com.Back_End_Food_Truck.System_Food_Truck.Model.TipoUsuario.A;
 
 @Service
-public class UsuarioService {
+public class ServiceAdmin {
 
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private RepositoryAdmin repositoryAdmin;
 
     @Autowired
     private EnderecoRepository enderecoRepository;
 
     public Optional<Usuario> autenticar(String email, String senha) {
-        return usuarioRepository.findByEmailAndSenha(email, senha)
+        return repositoryAdmin.findByEmailAndSenha(email, senha)
                 .filter(u -> u.getTipo() == A);
     }
 
     public List<DTOListaUsuario> listarUsuarios() {
-        return usuarioRepository.findAll()
+        return repositoryAdmin.findAll()
                 .stream()
                 .map(u -> {
                     String ativo = u.getAtivo() != null ? u.getAtivo().toString() : "false";
@@ -71,6 +71,29 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
+    public Optional<DTOListaUsuario> buscarPorEmailOuTelefone(String parametro) {
+        Optional<Usuario> usuario = repositoryAdmin.findByEmail(parametro);
+
+        if (usuario.isEmpty()) {
+            usuario = repositoryAdmin.findByTelefone(parametro);
+        }
+
+        // Se encontrou, converte para DTO
+        return usuario.map(u -> new DTOListaUsuario(
+                u.getAtivo() ? "Sim" : "Não",
+                u.getNome(),
+                u.getEmail(),
+                u.getTelefone(),
+                u.getTipo().name(), // se for enum
+                u.getEndereco().getRua(),
+                u.getEndereco().getBairro(),
+                u.getEndereco().getCidade(),
+                u.getEndereco().getCep(),
+                u.getEndereco().getNumero(),
+                u.getEndereco().getComplemento()
+        ));
+    }
+
 
 
     public Usuario cadastrarUsuario(DTOUsuario dtoUsuario) {
@@ -89,12 +112,11 @@ public class UsuarioService {
         Usuario usuario = new Usuario();
         usuario.setNome(dtoUsuario.getNome());
         usuario.setEmail(dtoUsuario.getEmail());
-        usuario.setSenha(dtoUsuario.getSenha());
         usuario.setTelefone(dtoUsuario.getTelefone());
         usuario.setTipo(dtoUsuario.getTipo());
         usuario.setEndereco(endereco);
 
-        return usuarioRepository.save(usuario);
+        return repositoryAdmin.save(usuario);
     }
 
     }
