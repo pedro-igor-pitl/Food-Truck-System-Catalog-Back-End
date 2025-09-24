@@ -8,4 +8,5 @@ import lombok.Data;
 public class DTOCategoria {
     private String nome;
     private String descricao;
+    private String ativo;
 }
