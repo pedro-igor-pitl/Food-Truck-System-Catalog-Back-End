@@ -4,16 +4,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+// DTO para entrada (request)
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class DTOProduto {
+public class DTOProdutoRequest {
     private Boolean ativo;
     private String nome;
     private String descricao;
     private String imagem_url;
     private Double preco;
-    private String descricaoCategoria;
-    private Boolean ativoCategoria;
-    private String nomeCategoria;
+    private Long categoriaId; // usado para buscar no banco
 }
