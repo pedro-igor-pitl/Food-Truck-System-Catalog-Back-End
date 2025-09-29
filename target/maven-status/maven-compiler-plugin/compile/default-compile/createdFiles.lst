@@ -1,0 +1,9 @@
+com\Back_End_Food_Truck\System_Food_Truck\SystemFoodTruckApplication.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\FormaPagamento.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\TipoUsuario.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\Pedido.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\Categoria.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\Usuario.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\Endereco.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\Produto.class
+com\Back_End_Food_Truck\System_Food_Truck\Model\PedidoItem.class
