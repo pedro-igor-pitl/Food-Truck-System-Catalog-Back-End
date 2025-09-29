@@ -20,10 +20,9 @@ public class Pedido {
     private Usuario usuario;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "endereco_id", nullable = false)
     private Endereco endereco;
-
 
     @Column(nullable = false)
     private LocalDateTime dataPedido = LocalDateTime.now();
@@ -41,6 +40,7 @@ public class Pedido {
     private Double precoTotal;
 
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PedidoItem> itens;
+
 }

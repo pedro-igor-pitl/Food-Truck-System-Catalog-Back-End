@@ -9,9 +9,11 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class DTOPedido {
-    private String usuarioNome;
-    private DTOEndereco endereco;
     private LocalDateTime dataPedido;
+    private String nomeUsuario;
+    private String telefoneUsuario;
+    private String emailUsuario;
+    private DTOEndereco endereco;
     private String formaPagamento;
     private String observacao;
     private Double precoTotal;

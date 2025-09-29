@@ -21,6 +21,7 @@ public class ControllerAdmin {
     @Autowired
     private ServiceAdmin serviceAdmin;
 
+    @CrossOrigin(origins = "http://localhost:5173")
     @PostMapping("/login")
     public ResponseEntity<HttpStatus> login(@RequestBody DTOLogin DTOLogin) {
         return  serviceAdmin.autenticar(DTOLogin.getEmail(), DTOLogin.getSenha())
