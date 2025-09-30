@@ -5,8 +5,10 @@ import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOPedido;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOPedidoItem;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOProduto;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.*;
+import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryEndereco;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryPedido;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryProduto;
+import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryUsuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +22,14 @@ public class ServicePedido {
     @Autowired
     private RepositoryProduto repositoryProduto;
 
-        @Autowired
-        private RepositoryPedido repositoryPedido;
+    @Autowired
+    private RepositoryPedido repositoryPedido;
+
+    @Autowired
+    private RepositoryEndereco repositoryEndereco;
+
+    @Autowired
+    private RepositoryUsuario repositoryUsuario;
 
     public Pedido criarPedido(DTOPedido dtoPedido) {
         Pedido pedido = new Pedido();
@@ -30,19 +38,51 @@ public class ServicePedido {
         pedido.setObservacao(dtoPedido.getObservacao());
         pedido.setPrecoTotal(dtoPedido.getPrecoTotal());
 
-        // Endereço
+        // 1. Buscar usuário pelo telefone
+        Usuario usuario = repositoryUsuario.findByTelefone(dtoPedido.getTelefoneUsuario())
+                .orElseGet(() -> {
+                    Usuario novo = new Usuario();
+                    novo.setNome(dtoPedido.getNomeUsuario());
+                    novo.setTelefone(dtoPedido.getTelefoneUsuario());
+                    novo.setEmail(dtoPedido.getEmailUsuario());
+                    novo.setTipo(TipoUsuario.C); // Usuário tipo cliente
+                    novo.setAtivo(true);
+                    // Garantir senha não nula
+                    novo.setSenha("*");
+
+                    // Salvar usuário com endereço se houver
+                    if (dtoPedido.getEndereco() != null) {
+                        DTOEndereco dtoEnd = dtoPedido.getEndereco();
+                        Endereco endereco = new Endereco();
+                        endereco.setRua(dtoEnd.getRua());
+                        endereco.setCidade(dtoEnd.getCidade());
+                        endereco.setBairro(dtoEnd.getBairro());
+                        endereco.setCep(dtoEnd.getCep());
+                        endereco.setNumero(dtoEnd.getNumero());
+                        endereco.setComplemento(dtoEnd.getComplemento());
+                        repositoryEndereco.save(endereco);
+                        novo.setEndereco(endereco);
+                    }
+
+                    return repositoryUsuario.save(novo);
+                });
+
+        pedido.setUsuario(usuario); // 🔑 Agora sempre terá usuário
+
+        // 2. Endereço do pedido (se diferente do usuário)
         if (dtoPedido.getEndereco() != null) {
-            Endereco endereco = new Endereco();
-            endereco.setRua(dtoPedido.getEndereco().getRua());
-            endereco.setCidade(dtoPedido.getEndereco().getCidade());
-            endereco.setCep(dtoPedido.getEndereco().getCep());
-            endereco.setNumero(dtoPedido.getEndereco().getNumero());
-            endereco.setBairro(dtoPedido.getEndereco().getBairro());
-            endereco.setComplemento(dtoPedido.getEndereco().getComplemento());
-            pedido.setEndereco(endereco);
+            Endereco enderecoPedido = new Endereco();
+            DTOEndereco dtoEnd = dtoPedido.getEndereco();
+            enderecoPedido.setRua(dtoEnd.getRua());
+            enderecoPedido.setCidade(dtoEnd.getCidade());
+            enderecoPedido.setCep(dtoEnd.getCep());
+            enderecoPedido.setNumero(dtoEnd.getNumero());
+            enderecoPedido.setBairro(dtoEnd.getBairro());
+            enderecoPedido.setComplemento(dtoEnd.getComplemento());
+            pedido.setEndereco(enderecoPedido);
         }
 
-        // Itens
+        // 3. Itens
         if (dtoPedido.getItens() != null && !dtoPedido.getItens().isEmpty()) {
             List<PedidoItem> itens = dtoPedido.getItens().stream()
                     .map(itemDto -> {
@@ -53,21 +93,15 @@ public class ServicePedido {
                         item.setProduto(produto);
                         item.setQuantidade(itemDto.getQuantidade());
                         item.setPrecoUnitario(itemDto.getPrecoUnitario());
-                        item.setPedido(pedido); // associa ao pedido
+                        item.setPedido(pedido);
                         return item;
                     })
                     .collect(Collectors.toList());
             pedido.setItens(itens);
         }
 
-        // salva tudo de uma vez
         return repositoryPedido.save(pedido);
     }
-
-
-        // Resto dos métodos (listar, buscar, deletar) permanecem iguais
-
-
 
     // LISTAR todos os pedidos
     public List<DTOPedido> listarPedidos() {
@@ -92,14 +126,17 @@ public class ServicePedido {
     }
 
     private DTOPedido converterParaDTO(Pedido pedido) {
-        DTOEndereco enderecoDTO = new DTOEndereco(
-                pedido.getEndereco().getCep(),
-                pedido.getEndereco().getBairro(),
-                pedido.getEndereco().getCidade(),
-                pedido.getEndereco().getComplemento(),
-                pedido.getEndereco().getNumero(),
-                pedido.getEndereco().getRua()
-        );
+        DTOEndereco enderecoDTO = null;
+        if (pedido.getEndereco() != null) {
+            enderecoDTO = new DTOEndereco(
+                    pedido.getEndereco().getCep(),
+                    pedido.getEndereco().getBairro(),
+                    pedido.getEndereco().getCidade(),
+                    pedido.getEndereco().getComplemento(),
+                    pedido.getEndereco().getNumero(),
+                    pedido.getEndereco().getRua()
+            );
+        }
 
         List<DTOPedidoItem> itensDTO = pedido.getItens().stream()
                 .map(item -> new DTOPedidoItem(
@@ -131,4 +168,4 @@ public class ServicePedido {
                 itensDTO
         );
     }
-    }
+}
