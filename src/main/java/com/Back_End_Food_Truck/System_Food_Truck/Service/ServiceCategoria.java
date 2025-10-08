@@ -21,7 +21,7 @@ public class ServiceCategoria {
         Categoria categoria = new Categoria();
         categoria.setNome(dtoCategoria.getNome());
         categoria.setDescricao(dtoCategoria.getDescricao());
-        categoria.setAtivo("Sim".equalsIgnoreCase(dtoCategoria.getAtivo()));
+        categoria.setAtivo(dtoCategoria.isAtivo());
         return repositoryCategoria.save(categoria);
     }
 
@@ -31,7 +31,7 @@ public class ServiceCategoria {
                 .map(c -> new DTOCategoria(
                         c.getNome(),
                         c.getDescricao(),
-                        c.getAtivo() != null && c.getAtivo() ? "true" : "false"
+                        c.getAtivo() != null && c.getAtivo()
                 ))
                 .collect(Collectors.toList());
     }
@@ -42,7 +42,7 @@ public class ServiceCategoria {
                 .map(c -> new DTOCategoria(
                         c.getNome(),
                         c.getDescricao(),
-                        c.getAtivo() != null && c.getAtivo() ? "true" : "false"
+                        c.getAtivo() != null && c.getAtivo()
                 ));
     }
 
@@ -53,7 +53,7 @@ public class ServiceCategoria {
             Categoria categoria = opt.get();
             categoria.setNome(dtoCategoria.getNome());
             categoria.setDescricao(dtoCategoria.getDescricao());
-            categoria.setAtivo("true".equalsIgnoreCase(dtoCategoria.getAtivo()));
+            categoria.setAtivo(dtoCategoria.isAtivo());
             repositoryCategoria.save(categoria);
             return Optional.of(categoria);
         }
