@@ -72,23 +72,23 @@ public class ServiceCategoria {
     }
 
     // ALTERNAR status de categoria
-    public boolean alternarStatusCategoria(Long id) {
-        Optional<Categoria> categoriaOptional = repositoryCategoria.findById(id);  // Invocando 'findById' corretamente
+        public boolean alternarStatusCategoria(Long id) {
+            Optional<Categoria> categoriaOptional = repositoryCategoria.findById(id);  // Invocando 'findById' corretamente
 
-        if (!categoriaOptional.isPresent()) {
-            return false;  // Se a categoria não for encontrada, retorna 'false'
+            if (!categoriaOptional.isPresent()) {
+                return false;  // Se a categoria não for encontrada, retorna 'false'
+            }
+
+            Categoria categoria = categoriaOptional.get();
+
+            // Alterna o status de 'ativo' (se for true, coloca false e vice-versa)
+            boolean novoStatus = !categoria.getAtivo();  // Corrigido: usando getAtivo() para acessar o valor de 'ativo'
+            categoria.setAtivo(novoStatus);  // Define o novo status
+
+            // Salva a categoria com o novo status
+            repositoryCategoria.save(categoria);
+
+            return true;  // Retorna 'true' se a alteração for bem-sucedida
         }
 
-        Categoria categoria = categoriaOptional.get();
-
-        // Alterna o status de 'ativo' (se for true, coloca false e vice-versa)
-        boolean novoStatus = !categoria.getAtivo();  // Corrigido: usando getAtivo() para acessar o valor de 'ativo'
-        categoria.setAtivo(novoStatus);  // Define o novo status
-
-        // Salva a categoria com o novo status
-        repositoryCategoria.save(categoria);
-
-        return true;  // Retorna 'true' se a alteração for bem-sucedida
     }
-
-}
