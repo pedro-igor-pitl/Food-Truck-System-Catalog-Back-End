@@ -52,4 +52,15 @@ public class ControllerCategoria {
         boolean deleted = serviceCategoria.deletarCategoria(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
+
+    @PutMapping("/alternar-status/{id}")
+    public ResponseEntity<Void> alternarStatus(@PathVariable Long id) {
+        boolean alterado = serviceCategoria.alternarStatusCategoria(id);
+
+        if (alterado) {
+            return ResponseEntity.noContent().build();  // Retorna 204 (Sem conteúdo) se a alteração for bem-sucedida
+        } else {
+            return ResponseEntity.notFound().build();  // Retorna 404 (Não encontrado) se a categoria não existir
+        }
+    }
 }

@@ -21,7 +21,7 @@ public class ServiceCategoria {
         Categoria categoria = new Categoria();
         categoria.setNome(dtoCategoria.getNome());
         categoria.setDescricao(dtoCategoria.getDescricao());
-        categoria.setAtivo(dtoCategoria.isAtivo());
+        categoria.setAtivo(dtoCategoria.getAtivo());  // Acessando diretamente a propriedade ativo
         return repositoryCategoria.save(categoria);
     }
 
@@ -29,9 +29,10 @@ public class ServiceCategoria {
     public List<DTOCategoria> listarCategorias() {
         return repositoryCategoria.findAll().stream()
                 .map(c -> new DTOCategoria(
+                        c.getId(),
                         c.getNome(),
                         c.getDescricao(),
-                        c.getAtivo() != null && c.getAtivo()
+                        c.getAtivo() != null && c.getAtivo()  // Acessando diretamente a propriedade ativo
                 ))
                 .collect(Collectors.toList());
     }
@@ -40,9 +41,10 @@ public class ServiceCategoria {
     public Optional<DTOCategoria> buscarPorId(Long id) {
         return repositoryCategoria.findById(id)
                 .map(c -> new DTOCategoria(
+                        c.getId(),
                         c.getNome(),
                         c.getDescricao(),
-                        c.getAtivo() != null && c.getAtivo()
+                        c.getAtivo() != null && c.getAtivo()  // Acessando diretamente a propriedade ativo
                 ));
     }
 
@@ -53,7 +55,7 @@ public class ServiceCategoria {
             Categoria categoria = opt.get();
             categoria.setNome(dtoCategoria.getNome());
             categoria.setDescricao(dtoCategoria.getDescricao());
-            categoria.setAtivo(dtoCategoria.isAtivo());
+            categoria.setAtivo(dtoCategoria.getAtivo());  // Acessando diretamente a propriedade ativo
             repositoryCategoria.save(categoria);
             return Optional.of(categoria);
         }
@@ -68,4 +70,25 @@ public class ServiceCategoria {
         }
         return false;
     }
+
+    // ALTERNAR status de categoria
+    public boolean alternarStatusCategoria(Long id) {
+        Optional<Categoria> categoriaOptional = repositoryCategoria.findById(id);  // Invocando 'findById' corretamente
+
+        if (!categoriaOptional.isPresent()) {
+            return false;  // Se a categoria não for encontrada, retorna 'false'
+        }
+
+        Categoria categoria = categoriaOptional.get();
+
+        // Alterna o status de 'ativo' (se for true, coloca false e vice-versa)
+        boolean novoStatus = !categoria.getAtivo();  // Corrigido: usando getAtivo() para acessar o valor de 'ativo'
+        categoria.setAtivo(novoStatus);  // Define o novo status
+
+        // Salva a categoria com o novo status
+        repositoryCategoria.save(categoria);
+
+        return true;  // Retorna 'true' se a alteração for bem-sucedida
+    }
+
 }
