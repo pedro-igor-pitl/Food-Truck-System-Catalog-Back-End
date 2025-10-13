@@ -1,6 +1,5 @@
 package com.Back_End_Food_Truck.System_Food_Truck.Controller;
 
-import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOProduto;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOProdutoRequest;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Produto;
 import com.Back_End_Food_Truck.System_Food_Truck.Service.ServiceProduto;
@@ -20,13 +19,13 @@ public class ControllerProduto {
 
     // LISTAR todos os produtos
     @GetMapping("/lista")
-    public List<DTOProduto> listarProdutos() {
+    public List<Produto> listarProdutos() {
         return serviceProduto.listarProdutos();
     }
 
     // BUSCAR por ID
     @GetMapping("/{id}")
-    public ResponseEntity<DTOProduto> buscarPorId(@PathVariable Long id) {
+    public ResponseEntity<Produto> buscarPorId(@PathVariable Long id) {
         return serviceProduto.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
@@ -35,9 +34,9 @@ public class ControllerProduto {
     // CRIAR produto
     @PostMapping("/cadastrar/{idCategoria}")
     public ResponseEntity<Produto> cadastrar(
-            @RequestBody DTOProduto dto,
+            @RequestBody Produto produto,
             @PathVariable Long idCategoria) {
-        Produto produto = serviceProduto.criarProduto(dto, idCategoria);
+        produto = serviceProduto.criarProduto(produto, idCategoria);
         return ResponseEntity.status(HttpStatus.CREATED).body(produto);
     }
 
@@ -47,18 +46,28 @@ public class ControllerProduto {
     public ResponseEntity<Produto> atualizar(
             @PathVariable Long idProduto,
             @PathVariable Long idCategoria,
-            @RequestBody DTOProduto dtoProduto) {
+            @RequestBody Produto produto) {
 
-        return serviceProduto.atualizarProduto(idProduto, idCategoria, dtoProduto)
+        return serviceProduto.atualizarProduto(idProduto, idCategoria, produto)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
 
     // DELETAR produto
     @DeleteMapping("/deletar/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         boolean deleted = serviceProduto.deletarProduto(id);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
+
+    @PutMapping("/alternar-status/{id}")
+    public ResponseEntity<Void> alternarStatusProduto(@PathVariable Long id) {
+        boolean alterado = serviceProduto.alternarStatusProduto(id);
+
+        if(alterado) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

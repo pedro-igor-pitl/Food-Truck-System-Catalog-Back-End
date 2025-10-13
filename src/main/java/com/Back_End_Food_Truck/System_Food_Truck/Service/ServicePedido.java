@@ -3,7 +3,6 @@ package com.Back_End_Food_Truck.System_Food_Truck.Service;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOEndereco;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOPedido;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOPedidoItem;
-import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOProduto;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.*;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryEndereco;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryPedido;
@@ -141,20 +140,12 @@ public class ServicePedido {
         List<DTOPedidoItem> itensDTO = pedido.getItens().stream()
                 .map(item -> new DTOPedidoItem(
                         item.getId(),
-                        new DTOProduto(
-                                item.getProduto().getAtivo(),
-                                item.getProduto().getNome(),
-                                item.getProduto().getDescricao(),
-                                item.getProduto().getImagemUrl(),
-                                item.getProduto().getPreco(),
-                                item.getProduto().getCategoria().getDescricao(),
-                                item.getProduto().getCategoria().getAtivo(),
-                                item.getProduto().getCategoria().getNome()
-                        ),
+                        item.getProduto(), // ← agora passa o Produto diretamente
                         item.getQuantidade(),
                         item.getPrecoUnitario()
                 ))
                 .collect(Collectors.toList());
+
 
         return new DTOPedido(
                 pedido.getDataPedido(),

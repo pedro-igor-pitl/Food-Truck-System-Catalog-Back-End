@@ -1,8 +1,5 @@
 package com.Back_End_Food_Truck.System_Food_Truck.Service;
 
-import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOCategoria;
-import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOProduto;
-import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOProdutoRequest;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Categoria;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Produto;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryCategoria;
@@ -23,16 +20,15 @@ public class ServiceProduto {
     @Autowired
     private RepositoryCategoria repositoryCategoria;
 
-    public Produto criarProduto(DTOProduto dto, Long idCategoria) {
+    public Produto criarProduto(Produto produto, Long idCategoria) {
         Categoria categoria = repositoryCategoria.findById(idCategoria)
                 .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
 
-        Produto produto = new Produto();
-        produto.setAtivo(dto.getAtivo());
-        produto.setNome(dto.getNome());
-        produto.setDescricao(dto.getDescricao());
-        produto.setImagemUrl(dto.getImagem_url());
-        produto.setPreco(dto.getPreco());
+        produto.setAtivo(produto.getAtivo());
+        produto.setNome(produto.getNome());
+        produto.setDescricao(produto.getDescricao());
+        produto.setImagemUrl(produto.getImagemUrl());
+        produto.setPreco(produto.getPreco());
         produto.setCategoria(categoria);
 
         return repositoryProduto.save(produto);
@@ -40,60 +36,57 @@ public class ServiceProduto {
 
 
     // LISTAR todos os produtos
-    public List<DTOProduto> listarProdutos() {
-        return repositoryProduto.findAll().stream()
-                .map(p -> new DTOProduto(
-                        p.getAtivo(),
-                        p.getNome(),
-                        p.getDescricao(),
-                        p.getImagemUrl(),
-                        p.getPreco(),
-                        p.getCategoria() != null ? p.getCategoria().getDescricao() : null,
-                        p.getCategoria() != null ? p.getCategoria().getAtivo() : null,
-                        p.getCategoria() != null ? p.getCategoria().getNome() : null
-                ))
-                .collect(Collectors.toList());
+    public List<Produto> listarProdutos() {
+        return repositoryProduto.findAll();
     }
 
     // BUSCAR por ID
-    public Optional<DTOProduto> buscarPorId(Long id) {
-        return repositoryProduto.findById(id)
-                .map(p -> new DTOProduto(
-                        p.getAtivo(),
-                        p.getNome(),
-                        p.getDescricao(),
-                        p.getImagemUrl(),
-                        p.getPreco(),
-                        p.getCategoria() != null ? p.getCategoria().getDescricao() : null,
-                        p.getCategoria() != null ? p.getCategoria().getAtivo() : null,
-                        p.getCategoria() != null ? p.getCategoria().getNome() : null
-                ));
+    public Optional<Produto> buscarPorId(Long id) {
+        return repositoryProduto.findById(id);
     }
 
-    public Optional<Produto> atualizarProduto(Long idProduto, Long idCategoria, DTOProduto dtoProduto) {
+    public Optional<Produto> atualizarProduto(Long idProduto, Long idCategoria, Produto produto) {
         Optional<Produto> produtoBanco = repositoryProduto.findById(idProduto);
 
         if (produtoBanco.isPresent()) {
-            Produto produto = produtoBanco.get();
-            produto.setNome(dtoProduto.getNome());
-            produto.setDescricao(dtoProduto.getDescricao());
-            produto.setAtivo(dtoProduto.getAtivo());
-            produto.setImagemUrl(dtoProduto.getImagem_url());
-            produto.setPreco(dtoProduto.getPreco());
+            Produto produtoAtualizado = produtoBanco.get(); // ✅ Nome diferente
+
+            produtoAtualizado.setNome(produto.getNome());
+            produtoAtualizado.setDescricao(produto.getDescricao());
+            produtoAtualizado.setAtivo(produto.getAtivo());
+            produtoAtualizado.setImagemUrl(produto.getImagemUrl());
+            produtoAtualizado.setPreco(produto.getPreco());
 
             if (idCategoria != null) {
                 Categoria categoria = repositoryCategoria.findById(idCategoria)
                         .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
-                produto.setCategoria(categoria);
+                produtoAtualizado.setCategoria(categoria);
             }
 
-            repositoryProduto.save(produto);
-            return Optional.of(produto);
+            repositoryProduto.save(produtoAtualizado);
+            return Optional.of(produtoAtualizado);
         }
 
         return Optional.empty();
     }
 
+    public boolean alternarStatusProduto(Long id) {
+        Optional<Produto> produtoOptional = repositoryProduto.findById(id);
+
+        if (!produtoOptional.isPresent()) {
+            return false;
+        }
+
+        Produto produto = produtoOptional.get();
+
+
+        boolean novoStatus = !produto.getAtivo();
+        produto.setAtivo(novoStatus);
+
+        repositoryProduto.save(produto);
+
+        return true;
+    }
 
     // DELETAR produto
     public boolean deletarProduto(Long id) {
