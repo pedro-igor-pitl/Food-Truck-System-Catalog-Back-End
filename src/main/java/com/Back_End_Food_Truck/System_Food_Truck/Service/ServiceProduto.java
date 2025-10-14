@@ -1,12 +1,12 @@
 package com.Back_End_Food_Truck.System_Food_Truck.Service;
 
+import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOProduto;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Categoria;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Produto;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryCategoria;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryProduto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -34,13 +34,22 @@ public class ServiceProduto {
         return repositoryProduto.save(produto);
     }
 
+    public List<DTOProduto> listarProdutos() {
+        List<Produto> produtos = repositoryProduto.findAll();
 
-    // LISTAR todos os produtos
-    public List<Produto> listarProdutos() {
-        return repositoryProduto.findAll();
+        return produtos.stream()
+                .map(produto -> new DTOProduto(
+                        produto.getId(),
+                        produto.getNome(),
+                        produto.getDescricao(),
+                        produto.getPreco(),
+                        produto.getImagemUrl(),
+                        produto.getAtivo(),
+                        produto.getCategoria()
+                ))
+                .collect(Collectors.toList());
     }
 
-    // BUSCAR por ID
     public Optional<Produto> buscarPorId(Long id) {
         return repositoryProduto.findById(id);
     }
@@ -49,7 +58,7 @@ public class ServiceProduto {
         Optional<Produto> produtoBanco = repositoryProduto.findById(idProduto);
 
         if (produtoBanco.isPresent()) {
-            Produto produtoAtualizado = produtoBanco.get(); // ✅ Nome diferente
+            Produto produtoAtualizado = produtoBanco.get();
 
             produtoAtualizado.setNome(produto.getNome());
             produtoAtualizado.setDescricao(produto.getDescricao());
@@ -79,7 +88,6 @@ public class ServiceProduto {
 
         Produto produto = produtoOptional.get();
 
-
         boolean novoStatus = !produto.getAtivo();
         produto.setAtivo(novoStatus);
 
@@ -88,7 +96,6 @@ public class ServiceProduto {
         return true;
     }
 
-    // DELETAR produto
     public boolean deletarProduto(Long id) {
         if (repositoryProduto.existsById(id)) {
             repositoryProduto.deleteById(id);
