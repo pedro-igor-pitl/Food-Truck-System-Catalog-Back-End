@@ -33,7 +33,7 @@ public class Produto {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "categoria_id")
-    @JsonBackReference
+    @JsonIgnoreProperties("produtos")
     private Categoria categoria;
 
 }
