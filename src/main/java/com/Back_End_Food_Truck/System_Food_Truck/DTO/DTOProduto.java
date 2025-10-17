@@ -16,4 +16,13 @@ public class DTOProduto {
     private String imagemUrl;
     private Boolean ativo;
     private Categoria categoria;
+
+    // Construtor adicional para quando não precisar do ID e categoria
+    public DTOProduto(String nome, String descricao, Double preco, Boolean ativo, String imagemUrl) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.preco = preco;
+        this.ativo = ativo;
+        this.imagemUrl = imagemUrl;
+    }
 }

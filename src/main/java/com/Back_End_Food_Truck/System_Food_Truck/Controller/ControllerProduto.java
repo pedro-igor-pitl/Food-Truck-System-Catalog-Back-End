@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -35,7 +36,7 @@ public class ControllerProduto {
     }
 
     @PostMapping(value = "/cadastrar/{idCategoria}", consumes = "multipart/form-data")
-    public ResponseEntity<Produto> cadastrar(
+    public ResponseEntity<DTOProduto> cadastrar(
             @PathVariable Long idCategoria,
             @RequestParam("nome") String nome,
             @RequestParam("descricao") String descricao,
@@ -44,30 +45,24 @@ public class ControllerProduto {
             @RequestParam("imagem") MultipartFile imagem
     ) {
         try {
-            String nomeImagem = UUID.randomUUID() + "_" + imagem.getOriginalFilename();
+            // Criando um DTOProduto com os dados recebidos
+            DTOProduto dtoProduto = new DTOProduto(nome, descricao, preco, ativo, "/uploads/" + imagem.getOriginalFilename());
 
-            // Define o caminho
-            //            // Gera um nome único para salvar a imagem
-            Path caminhoImagem = Paths.get("src/main/resources/static/uploads/" + nomeImagem);
+            // Chama o serviço para salvar o produto
+            Produto produtoSalvo = serviceProduto.criarProduto(dtoProduto, idCategoria);
 
-            // Cria diretório se não existir
-            Files.createDirectories(caminhoImagem.getParent());
+            // Mapeando o produto salvo de volta para DTOProduto
+            DTOProduto produtoDtoSalvo = new DTOProduto(
+                    produtoSalvo.getId(),
+                    produtoSalvo.getNome(),
+                    produtoSalvo.getDescricao(),
+                    produtoSalvo.getPreco(),
+                    produtoSalvo.getImagemUrl(),
+                    produtoSalvo.getAtivo(),
+                    produtoSalvo.getCategoria()
+            );
 
-            // Salva a imagem no disco
-            Files.copy(imagem.getInputStream(), caminhoImagem);
-
-            // Monta o objeto Produto com os dados recebidos
-            Produto produto = new Produto();
-            produto.setNome(nome);
-            produto.setDescricao(descricao);
-            produto.setPreco(preco);
-            produto.setAtivo(ativo);
-            produto.setImagemUrl("/uploads/" + nomeImagem); // caminho que será salvo no banco
-
-            // Chama o serviço para salvar o produto com a categoria associada
-            Produto produtoSalvo = serviceProduto.criarProduto(produto, idCategoria);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(produtoSalvo);
+            return ResponseEntity.status(HttpStatus.CREATED).body(produtoDtoSalvo);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -75,15 +70,28 @@ public class ControllerProduto {
         }
     }
 
-    @PutMapping("/atualizar/{idProduto}/{idCategoria}")
+
+    @PutMapping(value = "/atualizar/{idProduto}/{idCategoria}", consumes = "multipart/form-data")
     public ResponseEntity<Produto> atualizar(
             @PathVariable Long idProduto,
             @PathVariable Long idCategoria,
-            @RequestBody Produto produto) {
+            @RequestParam("nome") String nome,
+            @RequestParam("descricao") String descricao,
+            @RequestParam("preco") Double preco,
+            @RequestParam("ativo") Boolean ativo,
+            @RequestParam(value = "imagem", required = false) MultipartFile imagem
+    ) {
+        try {
+            Optional<Produto> produtoAtualizado = serviceProduto.atualizarProduto(idProduto, idCategoria, nome, descricao, preco, ativo, imagem);
 
-        return serviceProduto.atualizarProduto(idProduto, idCategoria, produto)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+            return produtoAtualizado
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> ResponseEntity.notFound().build());
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/deletar/{id}")
@@ -96,10 +104,11 @@ public class ControllerProduto {
     public ResponseEntity<Void> alternarStatusProduto(@PathVariable Long id) {
         boolean alterado = serviceProduto.alternarStatusProduto(id);
 
-        if(alterado) {
+        if (alterado) {
             return ResponseEntity.noContent().build();
         } else {
             return ResponseEntity.notFound().build();
         }
     }
 }
+
