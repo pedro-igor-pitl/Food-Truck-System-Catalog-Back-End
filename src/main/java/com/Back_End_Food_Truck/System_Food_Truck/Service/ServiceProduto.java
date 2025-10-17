@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -46,8 +47,6 @@ public class ServiceProduto {
         return repositoryProduto.findById(id);
     }
 
-// Modifique a parte onde você mapeia os produtos para DTOProduto no seu serviço:
-
     public List<DTOProduto> listarProdutos() {
         List<Produto> produtos = repositoryProduto.findAll();
 
@@ -64,36 +63,44 @@ public class ServiceProduto {
                 .collect(Collectors.toList());
     }
 
-
-
-    // A lógica de atualização agora está no serviço, incluindo a manipulação da imagem
     public Optional<Produto> atualizarProduto(Long idProduto, Long idCategoria, String nome, String descricao, Double preco, Boolean ativo, MultipartFile imagem) {
         Optional<Produto> produtoBanco = repositoryProduto.findById(idProduto);
 
         if (produtoBanco.isPresent()) {
             Produto produtoAtualizado = produtoBanco.get();
 
-            // Atualizando os dados do produto
+            // Atualizando os dados básicos do produto
             produtoAtualizado.setNome(nome);
             produtoAtualizado.setDescricao(descricao);
             produtoAtualizado.setPreco(preco);
             produtoAtualizado.setAtivo(ativo);
 
-            // Processando a imagem, se fornecida
+            // Se uma nova imagem for fornecida, substituímos a imagem antiga
             if (imagem != null && !imagem.isEmpty()) {
                 try {
+                    // 1. Remover a imagem anterior, se houver
+                    if (produtoAtualizado.getImagemUrl() != null && !produtoAtualizado.getImagemUrl().isEmpty()) {
+                        String imagemAntigaUrl = produtoAtualizado.getImagemUrl();
+                        String nomeImagemAntiga = imagemAntigaUrl.replace("/uploads/", "");
+                        Path caminhoImagemAntiga = Paths.get("src/main/resources/static/uploads", nomeImagemAntiga);
+
+                        // Deletar a imagem antiga
+                        Files.deleteIfExists(caminhoImagemAntiga); // Deleta a imagem antiga, se existir
+                    }
+
+                    // 2. Gerar um nome único para a nova imagem
                     String nomeImagem = UUID.randomUUID() + "_" + imagem.getOriginalFilename();
 
-                    // Define o caminho onde a imagem será salva
-                    Path caminhoImagem = Paths.get("src/main/resources/static/uploads/" + nomeImagem);
+                    // 3. Definir o caminho onde a nova imagem será salva
+                    Path caminhoImagem = Paths.get("src/main/resources/static/uploads", nomeImagem);
 
-                    // Cria diretório se não existir
+                    // 4. Criar diretórios se não existirem
                     Files.createDirectories(caminhoImagem.getParent());
 
-                    // Salva a imagem no disco
+                    // 5. Salvar a nova imagem no disco
                     Files.copy(imagem.getInputStream(), caminhoImagem);
 
-                    // Atualiza a URL da imagem no produto
+                    // 6. Atualizar a URL da nova imagem no produto
                     produtoAtualizado.setImagemUrl("/uploads/" + nomeImagem);
 
                 } catch (Exception e) {
@@ -102,7 +109,7 @@ public class ServiceProduto {
                 }
             }
 
-            // Atualizando a categoria do produto
+            // Atualizando a categoria do produto, se fornecido um ID de categoria
             if (idCategoria != null) {
                 Categoria categoria = repositoryCategoria.findById(idCategoria)
                         .orElseThrow(() -> new RuntimeException("Categoria não encontrada"));
@@ -114,8 +121,9 @@ public class ServiceProduto {
             return Optional.of(produtoAtualizado);
         }
 
-        return Optional.empty();
+        return Optional.empty(); // Caso o produto não seja encontrado
     }
+
 
     public boolean alternarStatusProduto(Long id) {
         Optional<Produto> produtoOptional = repositoryProduto.findById(id);
@@ -135,10 +143,32 @@ public class ServiceProduto {
     }
 
     public boolean deletarProduto(Long id) {
-        if (repositoryProduto.existsById(id)) {
-            repositoryProduto.deleteById(id);
-            return true;
-        }
+        Optional<Produto> produtoOptional = repositoryProduto.findById(id);
+
+        if (produtoOptional.isPresent()) {
+            Produto produto = produtoOptional.get();
+
+            String imagemUrl = produto.getImagemUrl();
+
+            if(imagemUrl != null && !imagemUrl.isEmpty()) {
+                String nomeImagem = imagemUrl.replace("/uploads", "");
+
+                Path caminhoImagem = Paths.get("src/main/resources/static/uploads", nomeImagem);
+
+                try {
+                    Files.deleteIfExists(caminhoImagem);
+
+                    repositoryProduto.findById(id);
+                    return true;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+            }else {
+                repositoryProduto.deleteById(id);
+                return true;
+                }
+            }
         return false;
     }
 }
