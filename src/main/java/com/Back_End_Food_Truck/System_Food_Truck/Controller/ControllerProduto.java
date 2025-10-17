@@ -7,8 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/produto")
@@ -29,12 +34,45 @@ public class ControllerProduto {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/cadastrar/{idCategoria}")
+    @PostMapping(value = "/cadastrar/{idCategoria}", consumes = "multipart/form-data")
     public ResponseEntity<Produto> cadastrar(
-            @RequestBody Produto produto,
-            @PathVariable Long idCategoria) {
-        produto = serviceProduto.criarProduto(produto, idCategoria);
-        return ResponseEntity.status(HttpStatus.CREATED).body(produto);
+            @PathVariable Long idCategoria,
+            @RequestParam("nome") String nome,
+            @RequestParam("descricao") String descricao,
+            @RequestParam("preco") Double preco,
+            @RequestParam("ativo") Boolean ativo,
+            @RequestParam("imagem") MultipartFile imagem
+    ) {
+        try {
+            String nomeImagem = UUID.randomUUID() + "_" + imagem.getOriginalFilename();
+
+            // Define o caminho
+            //            // Gera um nome único para salvar a imagem
+            Path caminhoImagem = Paths.get("src/main/resources/static/uploads/" + nomeImagem);
+
+            // Cria diretório se não existir
+            Files.createDirectories(caminhoImagem.getParent());
+
+            // Salva a imagem no disco
+            Files.copy(imagem.getInputStream(), caminhoImagem);
+
+            // Monta o objeto Produto com os dados recebidos
+            Produto produto = new Produto();
+            produto.setNome(nome);
+            produto.setDescricao(descricao);
+            produto.setPreco(preco);
+            produto.setAtivo(ativo);
+            produto.setImagemUrl("/uploads/" + nomeImagem); // caminho que será salvo no banco
+
+            // Chama o serviço para salvar o produto com a categoria associada
+            Produto produtoSalvo = serviceProduto.criarProduto(produto, idCategoria);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(produtoSalvo);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/atualizar/{idProduto}/{idCategoria}")
