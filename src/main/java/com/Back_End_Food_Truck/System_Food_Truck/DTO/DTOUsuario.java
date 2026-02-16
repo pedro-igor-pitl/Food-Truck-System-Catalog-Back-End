@@ -12,5 +12,4 @@ public class DTOUsuario {
     private TipoUsuario tipo;
     private String telefone;
     private DTOEndereco endereco;
-
 }

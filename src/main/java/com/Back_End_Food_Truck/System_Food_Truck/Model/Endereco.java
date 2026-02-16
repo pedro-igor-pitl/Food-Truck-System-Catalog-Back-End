@@ -31,4 +31,7 @@ public class Endereco {
 
     @Column(nullable = false, length = 8)
     private String cep;
+
+    @Column(length = 2)
+    private String estado;
 }

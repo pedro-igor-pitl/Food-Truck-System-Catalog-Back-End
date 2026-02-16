@@ -133,7 +133,8 @@ public class ServicePedido {
                     pedido.getEndereco().getCidade(),
                     pedido.getEndereco().getComplemento(),
                     pedido.getEndereco().getNumero(),
-                    pedido.getEndereco().getRua()
+                    pedido.getEndereco().getRua(),
+                    pedido.getEndereco().getEstado()
             );
         }
 

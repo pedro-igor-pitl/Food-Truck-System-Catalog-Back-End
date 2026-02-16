@@ -46,6 +46,7 @@ public class ServiceUsuario {
             endereco.setCep(dtoEndereco.getCep());
             endereco.setNumero(dtoEndereco.getNumero());
             endereco.setComplemento(dtoEndereco.getComplemento());
+            endereco.setEstado(dtoEndereco.getEstado());
             repositoryEndereco.save(endereco);
         }
 
@@ -113,6 +114,7 @@ public class ServiceUsuario {
                 endereco.setCep(dtoEndereco.getCep());
                 endereco.setNumero(dtoEndereco.getNumero());
                 endereco.setComplemento(dtoEndereco.getComplemento());
+                endereco.setEstado(dtoEndereco.getEstado());
 
                 repositoryEndereco.save(endereco);
                 usuario.setEndereco(endereco);
@@ -144,7 +146,8 @@ public class ServiceUsuario {
                 u.getEndereco() != null ? u.getEndereco().getCidade() : "",
                 u.getEndereco() != null ? u.getEndereco().getCep() : "",
                 u.getEndereco() != null ? u.getEndereco().getNumero() : "",
-                u.getEndereco() != null ? u.getEndereco().getComplemento() : ""
+                u.getEndereco() != null ? u.getEndereco().getComplemento() : "",
+                u.getEndereco() != null ? u.getEndereco().getEstado() : ""
         );
     }
 }
