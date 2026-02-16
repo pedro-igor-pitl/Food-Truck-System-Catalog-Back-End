@@ -4,6 +4,7 @@ import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOEndereco;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOListaUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.DTO.DTOUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Endereco;
+import com.Back_End_Food_Truck.System_Food_Truck.Model.Produto;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.TipoUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Usuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryEndereco;
@@ -124,6 +125,23 @@ public class ServiceUsuario {
         });
     }
 
+    public boolean alternarStatusUsuario(Long id) {
+        Optional<Usuario> usuarioOptional = repositoryUsuario.findById(id);
+
+        if (!usuarioOptional.isPresent()) {
+            return false;
+        }
+
+        Usuario usuario = usuarioOptional.get();
+
+        boolean novoStatus = !usuario.getAtivo();
+        usuario.setAtivo(novoStatus);
+
+        repositoryUsuario.save(usuario);
+
+        return true;
+    }
+
     // DELETAR usuário
     public boolean deletarUsuario(Long id) {
         if (repositoryUsuario.existsById(id)) {
@@ -136,6 +154,7 @@ public class ServiceUsuario {
     //MÉTODOAUXILIAR
     private DTOListaUsuario converterParaDTO(Usuario u) {
         return new DTOListaUsuario(
+                u.getId(),
                 u.getAtivo() != null && u.getAtivo() ? "Sim" : "Não",
                 u.getNome(),
                 u.getEmail(),

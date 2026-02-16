@@ -57,6 +57,17 @@ public class ControllerUsuario {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/alternar-status/{id}")
+    public ResponseEntity<Void> alternarStatusProduto(@PathVariable Long id) {
+        boolean alterado = serviceUsuario.alternarStatusUsuario(id);
+
+        if (alterado) {
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     // Deletar usuário
     @DeleteMapping("/deletar/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
