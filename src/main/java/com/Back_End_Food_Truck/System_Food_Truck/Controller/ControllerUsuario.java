@@ -26,7 +26,7 @@ public class ControllerUsuario {
     }
 
     // Buscar por email ou telefone
-    @PostMapping("/search")
+    @PostMapping("/VerificarUsuario")
     public ResponseEntity<DTOListaUsuario> buscarUsuario(@RequestBody Map<String, String> body) {
         String parametro = body.get("parametro");
         return serviceUsuario.buscarPorEmailOuTelefone(parametro)
