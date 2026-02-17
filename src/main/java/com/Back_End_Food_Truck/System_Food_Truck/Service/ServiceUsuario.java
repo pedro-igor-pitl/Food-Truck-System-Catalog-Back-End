@@ -98,7 +98,7 @@ public class ServiceUsuario {
     public Optional<Usuario> atualizarUsuario(Long id, DTOUsuario dtoUsuario) {
         return repositoryUsuario.findById(id).map(usuario -> {
 
-            usuario.setAtivo("true".equalsIgnoreCase(dtoUsuario.getAtivo()));
+            usuario.setAtivo("Sim".equalsIgnoreCase(dtoUsuario.getAtivo()));
             usuario.setNome(dtoUsuario.getNome());
             usuario.setEmail(dtoUsuario.getEmail());
             usuario.setTelefone(dtoUsuario.getTelefone());
