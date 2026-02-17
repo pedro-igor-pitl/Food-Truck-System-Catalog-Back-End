@@ -104,6 +104,10 @@ public class ServiceUsuario {
             usuario.setTelefone(dtoUsuario.getTelefone());
             usuario.setTipo(dtoUsuario.getTipo());
 
+            if (dtoUsuario.getSenha() != null && !dtoUsuario.getSenha().isEmpty()) {
+                usuario.setSenha(dtoUsuario.getSenha());
+            }
+
             if (dtoUsuario.getEndereco() != null) {
                 Endereco endereco = usuario.getEndereco();
                 if (endereco == null) endereco = new Endereco();
