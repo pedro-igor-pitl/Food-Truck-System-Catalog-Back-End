@@ -22,6 +22,7 @@ public class ServiceCatalogo {
 
         return produtos.stream()
                 .map(produto -> new DTOCatalogo(
+                        produto.getId(),
                         produto.getCategoria().getNome(),
                         produto.getNome(),
                         produto.getDescricao(),

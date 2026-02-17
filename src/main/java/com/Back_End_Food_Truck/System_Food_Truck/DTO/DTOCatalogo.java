@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class DTOCatalogo {
+    Long id;
     String categoria;
     String produto;
     String descricao;
