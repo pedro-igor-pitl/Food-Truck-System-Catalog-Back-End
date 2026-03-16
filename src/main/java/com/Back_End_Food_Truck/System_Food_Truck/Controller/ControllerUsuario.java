@@ -42,6 +42,12 @@ public class ControllerUsuario {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/email/{email}")
+    public ResponseEntity<DTOListaUsuario> buscarPorEmail(@PathVariable String email) {
+        return serviceUsuario.buscarPorEmailOuTelefone(email)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
     // Criar usuário
     @PostMapping("/cadastrar")
     public ResponseEntity<Usuario> cadastrar(@RequestBody DTOUsuario dtoUsuario) {
