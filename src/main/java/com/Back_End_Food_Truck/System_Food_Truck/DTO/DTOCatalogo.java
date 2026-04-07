@@ -13,5 +13,6 @@ public class DTOCatalogo {
     String produto;
     String descricao;
     Double preco;
+    Boolean ativo;
     String imagemUrl;
 }

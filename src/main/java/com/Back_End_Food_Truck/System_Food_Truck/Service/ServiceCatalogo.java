@@ -27,6 +27,7 @@ public class ServiceCatalogo {
                         produto.getNome(),
                         produto.getDescricao(),
                         produto.getPreco(),
+                        produto.getAtivo(),
                         produto.getImagemUrl()
                 ))
                 .collect(Collectors.toList());

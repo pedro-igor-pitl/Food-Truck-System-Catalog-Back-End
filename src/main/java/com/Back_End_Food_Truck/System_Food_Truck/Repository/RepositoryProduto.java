@@ -18,6 +18,7 @@ public interface RepositoryProduto extends JpaRepository<Produto, Long> {
             p.nome,
             p.descricao,
             p.preco,
+            p.ativo,
             p.imagemUrl
         )
         FROM Produto p
