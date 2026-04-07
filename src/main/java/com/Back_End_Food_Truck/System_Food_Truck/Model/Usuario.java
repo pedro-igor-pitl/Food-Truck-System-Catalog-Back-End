@@ -25,7 +25,7 @@ public class Usuario {
     private String telefone;
 
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private String senha;
 
 

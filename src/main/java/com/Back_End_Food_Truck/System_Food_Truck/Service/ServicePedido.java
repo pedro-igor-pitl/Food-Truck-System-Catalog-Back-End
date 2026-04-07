@@ -31,92 +31,109 @@ public class ServicePedido {
     private RepositoryUsuario repositoryUsuario;
 
     public Pedido criarPedido(DTOPedido dtoPedido) {
+
         Pedido pedido = new Pedido();
         pedido.setDataPedido(dtoPedido.getDataPedido());
-        pedido.setFormaPagamento(FormaPagamento.valueOf(dtoPedido.getFormaPagamento()));
-        pedido.setObservacao(dtoPedido.getObservacao());
-        pedido.setPrecoTotal(dtoPedido.getPrecoTotal());
 
-        // 1. Buscar usuário pelo telefone
-        Usuario usuario = repositoryUsuario.findByTelefone(dtoPedido.getTelefoneUsuario())
+        // ✅ Forma de pagamento segura
+        FormaPagamento formaPagamento = FormaPagamento.valueOf(
+                dtoPedido.getFormaPagamento().toUpperCase().replace(" ", "_")
+        );
+        pedido.setFormaPagamento(formaPagamento);
+
+        pedido.setObservacao(dtoPedido.getObservacao());
+
+        // ✅ 1. Buscar usuário por EMAIL (melhor prática)
+        Usuario usuario = repositoryUsuario.findByEmail(dtoPedido.getEmailUsuario())
                 .orElseGet(() -> {
                     Usuario novo = new Usuario();
                     novo.setNome(dtoPedido.getNomeUsuario());
                     novo.setTelefone(dtoPedido.getTelefoneUsuario());
                     novo.setEmail(dtoPedido.getEmailUsuario());
-                    novo.setTipo(TipoUsuario.C); // Usuário tipo cliente
+                    novo.setTipo(TipoUsuario.C);
                     novo.setAtivo(true);
-                    // Garantir senha não nula
-                    novo.setSenha("*");
 
-                    // Salvar usuário com endereço se houver
-                    if (dtoPedido.getEndereco() != null) {
-                        DTOEndereco dtoEnd = dtoPedido.getEndereco();
-                        Endereco endereco = new Endereco();
-                        endereco.setRua(dtoEnd.getRua());
-                        endereco.setCidade(dtoEnd.getCidade());
-                        endereco.setBairro(dtoEnd.getBairro());
-                        endereco.setCep(dtoEnd.getCep());
-                        endereco.setNumero(dtoEnd.getNumero());
-                        endereco.setComplemento(dtoEnd.getComplemento());
-                        repositoryEndereco.save(endereco);
-                        novo.setEndereco(endereco);
-                    }
+                    // ✅ senha opcional para cliente
+                    novo.setSenha(null);
 
                     return repositoryUsuario.save(novo);
                 });
 
-        pedido.setUsuario(usuario); // 🔑 Agora sempre terá usuário
+        pedido.setUsuario(usuario);
 
-        // 2. Endereço do pedido (se diferente do usuário)
+        // ✅ 2. Endereço SOMENTE no pedido (evita duplicação)
         if (dtoPedido.getEndereco() != null) {
-            Endereco enderecoPedido = new Endereco();
             DTOEndereco dtoEnd = dtoPedido.getEndereco();
-            enderecoPedido.setRua(dtoEnd.getRua());
-            enderecoPedido.setCidade(dtoEnd.getCidade());
-            enderecoPedido.setCep(dtoEnd.getCep());
-            enderecoPedido.setNumero(dtoEnd.getNumero());
-            enderecoPedido.setBairro(dtoEnd.getBairro());
-            enderecoPedido.setComplemento(dtoEnd.getComplemento());
-            enderecoPedido.setEstado(dtoEnd.getEstado());
-            pedido.setEndereco(enderecoPedido);
+
+            Endereco endereco = new Endereco();
+            endereco.setRua(dtoEnd.getRua());
+            endereco.setCidade(dtoEnd.getCidade());
+            endereco.setBairro(dtoEnd.getBairro());
+            endereco.setCep(dtoEnd.getCep());
+            endereco.setNumero(dtoEnd.getNumero());
+            endereco.setComplemento(dtoEnd.getComplemento());
+            endereco.setEstado(dtoEnd.getEstado()); // ✅ IMPORTANTE
+
+            repositoryEndereco.save(endereco);
+
+// salva no pedido
+            pedido.setEndereco(endereco);
+
+// 🔥 AQUI É A CORREÇÃO
+            usuario.setEndereco(endereco);
+            repositoryUsuario.save(usuario);
         }
 
-        // 3. Itens
+        // ✅ 3. Itens + cálculo do total no backend
+        double total = 0;
+
         if (dtoPedido.getItens() != null && !dtoPedido.getItens().isEmpty()) {
+
             List<PedidoItem> itens = dtoPedido.getItens().stream()
                     .map(itemDto -> {
+
                         Produto produto = repositoryProduto.findById(itemDto.getProdutoId())
-                                .orElseThrow(() -> new RuntimeException("Produto não encontrado: " + itemDto.getProdutoId()));
+                                .orElseThrow(() -> new RuntimeException(
+                                        "Produto não encontrado: " + itemDto.getProdutoId()
+                                ));
 
                         PedidoItem item = new PedidoItem();
                         item.setProduto(produto);
                         item.setQuantidade(itemDto.getQuantidade());
-                        item.setPrecoUnitario(itemDto.getPrecoUnitario());
+                        item.setPrecoUnitario(produto.getPreco()); // 🔥 valor real do banco
                         item.setPedido(pedido);
+
                         return item;
                     })
                     .collect(Collectors.toList());
+
+            // calcula total
+            total = itens.stream()
+                    .mapToDouble(i -> i.getPrecoUnitario() * i.getQuantidade())
+                    .sum();
+
             pedido.setItens(itens);
         }
+
+        pedido.setPrecoTotal(total); // 🔥 backend controla
 
         return repositoryPedido.save(pedido);
     }
 
-    // LISTAR todos os pedidos
+    // ✅ LISTAR pedidos
     public List<DTOPedido> listarPedidos() {
         return repositoryPedido.findAll().stream()
                 .map(this::converterParaDTO)
                 .collect(Collectors.toList());
     }
 
-    // BUSCAR pedido por ID
+    // ✅ BUSCAR por ID
     public Optional<DTOPedido> buscarPorId(Long id) {
         return repositoryPedido.findById(id)
                 .map(this::converterParaDTO);
     }
 
-    // DELETAR pedido
+    // ✅ DELETAR
     public boolean deletarPedido(Long id) {
         if (repositoryPedido.existsById(id)) {
             repositoryPedido.deleteById(id);
@@ -125,8 +142,11 @@ public class ServicePedido {
         return false;
     }
 
+    // ✅ CONVERTER PARA DTO (com ID agora)
     private DTOPedido converterParaDTO(Pedido pedido) {
+
         DTOEndereco enderecoDTO = null;
+
         if (pedido.getEndereco() != null) {
             enderecoDTO = new DTOEndereco(
                     pedido.getEndereco().getCep(),
@@ -142,15 +162,14 @@ public class ServicePedido {
         List<DTOPedidoItem> itensDTO = pedido.getItens().stream()
                 .map(item -> new DTOPedidoItem(
                         item.getId(),
-                        item.getProduto(), // ← agora passa o Produto diretamente
+                        item.getProduto(),
                         item.getQuantidade(),
                         item.getPrecoUnitario()
                 ))
                 .collect(Collectors.toList());
 
-
         return new DTOPedido(
-                pedido.getId(),
+                pedido.getId(), // 🔥 ESSENCIAL
                 pedido.getDataPedido(),
                 pedido.getUsuario().getNome(),
                 pedido.getUsuario().getTelefone(),
