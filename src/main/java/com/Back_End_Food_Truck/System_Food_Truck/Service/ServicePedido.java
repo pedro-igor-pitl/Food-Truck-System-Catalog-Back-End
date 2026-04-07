@@ -150,6 +150,7 @@ public class ServicePedido {
 
 
         return new DTOPedido(
+                pedido.getId(),
                 pedido.getDataPedido(),
                 pedido.getUsuario().getNome(),
                 pedido.getUsuario().getTelefone(),

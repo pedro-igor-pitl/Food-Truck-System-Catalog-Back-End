@@ -9,6 +9,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class DTOPedido {
+
+    private Long id; // ✅ ADICIONA ISSO
+
     private LocalDateTime dataPedido;
     private String nomeUsuario;
     private String telefoneUsuario;
