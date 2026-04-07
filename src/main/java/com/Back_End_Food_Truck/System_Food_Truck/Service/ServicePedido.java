@@ -78,6 +78,7 @@ public class ServicePedido {
             enderecoPedido.setNumero(dtoEnd.getNumero());
             enderecoPedido.setBairro(dtoEnd.getBairro());
             enderecoPedido.setComplemento(dtoEnd.getComplemento());
+            enderecoPedido.setEstado(dtoEnd.getEstado());
             pedido.setEndereco(enderecoPedido);
         }
 
