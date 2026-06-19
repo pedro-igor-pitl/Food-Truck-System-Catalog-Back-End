@@ -11,6 +11,7 @@ import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryEndereco;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryAdmin;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryUsuario;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +20,13 @@ import java.util.stream.Collectors;
 
 @Service
 public class ServiceUsuario {
+
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public ServiceUsuario(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Autowired
     private RepositoryAdmin repositoryAdmin;
@@ -31,8 +39,17 @@ public class ServiceUsuario {
 
     // Autenticação
     public Optional<Usuario> autenticar(String email, String senha) {
-        return repositoryAdmin.findByEmailAndSenha(email, senha)
-                .filter(u -> u.getTipo() == TipoUsuario.A);
+
+        Optional<Usuario> usuario = repositoryAdmin.findByEmail(email);
+
+        if (usuario.isPresent()
+                && passwordEncoder.matches(senha, usuario.get().getSenha())
+                && usuario.get().getTipo() == TipoUsuario.A) {
+
+            return usuario;
+        }
+
+        return Optional.empty();
     }
 
     // CRIAR usuário
@@ -64,7 +81,10 @@ public class ServiceUsuario {
             if (dtoUsuario.getSenha() == null || dtoUsuario.getSenha().isEmpty()) {
                 throw new IllegalArgumentException("Senha obrigatória para administradores.");
             }
-            usuario.setSenha(dtoUsuario.getSenha());
+
+            usuario.setSenha(
+                    passwordEncoder.encode(dtoUsuario.getSenha())
+            );
         } else if (TipoUsuario.C.equals(dtoUsuario.getTipo())) {
             usuario.setSenha(dtoUsuario.getSenha() != null ? dtoUsuario.getSenha() : "*");
         }
@@ -105,7 +125,9 @@ public class ServiceUsuario {
             usuario.setTipo(dtoUsuario.getTipo());
 
             if (dtoUsuario.getSenha() != null && !dtoUsuario.getSenha().isEmpty()) {
-                usuario.setSenha(dtoUsuario.getSenha());
+                usuario.setSenha(
+                        passwordEncoder.encode(dtoUsuario.getSenha())
+                );
             }
 
             if (dtoUsuario.getEndereco() != null) {
