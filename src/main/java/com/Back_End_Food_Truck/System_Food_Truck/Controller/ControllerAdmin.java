@@ -33,6 +33,7 @@ public class ControllerAdmin {
 
     @GetMapping("/totalizadores")
     public DTOTotalizadoresDashboardAdmin getTotalizadores() {
+        System.out.println("ENTROU NO CONTROLLER");
         return serviceTotalizadorDashboardAdmin.getTotalizadores();
     }
 }

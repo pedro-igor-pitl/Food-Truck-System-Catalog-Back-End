@@ -4,9 +4,12 @@ import com.Back_End_Food_Truck.System_Food_Truck.DTO.LoginRequest;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.TipoUsuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Model.Usuario;
 import com.Back_End_Food_Truck.System_Food_Truck.Repository.RepositoryUsuario;
+import com.Back_End_Food_Truck.System_Food_Truck.Security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final RepositoryUsuario repositoryUsuario;
+    private final JwtService jwtService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(
@@ -49,6 +53,13 @@ public class AuthController {
                     .body("Usuário inativo");
         }
 
-        return ResponseEntity.ok("Login realizado");
+        String token =
+                jwtService.gerarToken(
+                        usuario.getEmail()
+                );
+
+        return ResponseEntity.ok(Map.of(
+                "token", token
+        ));
     }
 }
