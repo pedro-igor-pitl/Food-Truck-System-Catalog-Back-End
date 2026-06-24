@@ -47,6 +47,9 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/home/**").permitAll()
+                        .requestMatchers("/usuario/VerificarUsuario").permitAll()
+                        .requestMatchers("/pedido/cadastrar").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter,
