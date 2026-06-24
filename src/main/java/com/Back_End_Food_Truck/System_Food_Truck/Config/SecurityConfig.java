@@ -50,6 +50,7 @@ public class SecurityConfig {
                         .requestMatchers("/home/**").permitAll()
                         .requestMatchers("/usuario/VerificarUsuario").permitAll()
                         .requestMatchers("/pedido/cadastrar").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter,
